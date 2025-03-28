@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biogas Compressor UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex flex-col items-center p-6">
+    <h1 class="text-2xl font-bold mb-6">Biogas Compressor UI</h1>
+
+    <div class="flex items-center space-x-8 mb-8">
+        <!-- Buffer Vessels stacked vertically -->
+        <div class="flex flex-col items-center space-y-8">
+            <!-- Buffer Vessel 1 -->
+            <div class="flex flex-col items-center bg-blue-200 p-4 rounded-lg shadow-md w-24 h-48">
+                <span class="font-semibold">Buffer Tank A</span>
+                <div class="bg-blue-500 w-full h-32 rounded-lg mt-2 relative">
+                    <div id="v1Volume" class="bg-blue-700 w-full h-full rounded-lg absolute bottom-0"></div>
+                </div>
+                <span id="v1Label">5 m³</span> <!-- Display current volume -->
+                <input type="range" id="v1Valve" value="0" min="0" max="5" step="0.1" class="w-16 mt-2">
+                <span>Valve</span>
+            </div>
+
+            <!-- Buffer Vessel 2 -->
+            <div class="flex flex-col items-center bg-blue-200 p-4 rounded-lg shadow-md w-24 h-48">
+                <span class="font-semibold">Buffer Tank B</span>
+                <div class="bg-blue-500 w-full h-32 rounded-lg mt-2 relative">
+                    <div id="v2Volume" class="bg-blue-700 w-full h-full rounded-lg absolute bottom-0"></div>
+                </div>
+                <span id="v2Label">5 m³</span> <!-- Display current volume -->
+                <input type="range" id="v2Valve" value="0" min="0" max="5" step="0.1" class="w-16 mt-2">
+                <span>Valve</span>
+            </div>
+        </div>
+
+        <span class="text-xl">➡️</span>
+
+        <!-- Recycle Tank -->
+        <div class="flex flex-col items-center justify-center bg-orange-200 p-6 rounded-lg shadow-md w-32 h-48 font-semibold">
+            <span>Recycle Tank</span>
+            <div class="bg-orange-500 w-full h-32 rounded-lg mt-2 relative">
+                <div id="recycleVolumeBar" class="bg-orange-700 w-full h-full rounded-lg absolute bottom-0"></div>
+            </div>
+            <span id="recycleVolume">0</span> / 7 m³
+        </div>
+
+        <span class="text-xl">➡️</span>
+
+        <!-- Recycle Compressor -->
+        <div class="flex items-center justify-center bg-orange-400 p-6 rounded-lg shadow-md w-40 h-32 font-semibold">
+            Recycle Compressor
+        </div>
+    </div>
+
+    <script>
+        let transferInterval = null;
+
+        // Function to handle gradual volume transfer
+        function transferVolume() {
+            let v1Volume = parseFloat(document.getElementById("v1Label").innerText); // Buffer Tank A current volume
+            let v2Volume = parseFloat(document.getElementById("v2Label").innerText); // Buffer Tank B current volume
+            let v1Valve = parseFloat(document.getElementById("v1Valve").value); // Buffer Tank A valve open value
+            let v2Valve = parseFloat(document.getElementById("v2Valve").value); // Buffer Tank B valve open value
+            let recycleTank = document.getElementById("recycleVolume");
+            let recycleVolume = parseFloat(recycleTank.innerText); // Recycle Tank current volume
+
+            let recycleTankCapacity = 7.0; // Recycle tank capacity
+            let bufferTankCapacity = 5.0; // Buffer tank capacity
+
+            // Only start the transfer if the valve is open and there's gas to transfer
+            if ((v1Valve > 0 || v2Valve > 0) && (v1Volume > 0 || v2Volume > 0) && recycleVolume < recycleTankCapacity) {
+                if (transferInterval) {
+                    clearInterval(transferInterval); // Clear previous interval if it's running
+                }
+
+                transferInterval = setInterval(function () {
+                    // Calculate transfer rate based on valve open percentage (0 to 1)
+                    let v1TransferRate = v1Valve * 0.1; // Rate based on how open the valve is (max 0.1 m³)
+                    let v2TransferRate = v2Valve * 0.1; // Rate based on how open the valve is (max 0.1 m³)
+
+                    // Calculate volume to transfer from buffer tank A and B
+                    let v1Transfer = Math.min(v1Volume, v1TransferRate, recycleTankCapacity - recycleVolume); // Volume to transfer from v1
+                    let v2Transfer = Math.min(v2Volume, v2TransferRate, recycleTankCapacity - recycleVolume); // Volume to transfer from v2
+
+                    // Ensure that we don't transfer more than available in either buffer tank
+                    if (v1Transfer > 0) {
+                        v1Volume -= v1Transfer; // Transfer from v1
+                        recycleVolume += v1Transfer;
+                        document.getElementById("v1Label").innerText = (v1Volume < 0 ? 0 : v1Volume).toFixed(1); // Prevent negative volume
+                    }
+
+                    if (v2Transfer > 0 && recycleVolume < recycleTankCapacity) {
+                        v2Volume -= v2Transfer;
+                        recycleVolume += v2Transfer;
+                        document.getElementById("v2Label").innerText = (v2Volume < 0 ? 0 : v2Volume).toFixed(1); // Prevent negative volume
+                    }
+
+                    // Update Recycle Volume and progress bar
+                    recycleTank.innerText = (recycleVolume >= recycleTankCapacity ? recycleTankCapacity : recycleVolume).toFixed(1); // Prevent exceeding 7.0
+                    let recycleVolumeBar = document.getElementById("recycleVolumeBar");
+                    recycleVolumeBar.style.height = (recycleVolume / recycleTankCapacity * 100) + "%";
+
+                    // Update the buffer tank volume progress bars
+                    document.getElementById("v1Volume").style.height = (v1Volume / bufferTankCapacity * 100) + "%";
+                    document.getElementById("v2Volume").style.height = (v2Volume / bufferTankCapacity * 100) + "%";
+
+                    // Stop the interval if both buffer tanks are empty or the recycle tank is full
+                    if ((v1Volume <= 0 && v2Volume <= 0) || recycleVolume >= recycleTankCapacity) {
+                        clearInterval(transferInterval); // Stop transfer when tanks are empty or full
+                    }
+                }, 200); // Delay of 200 milliseconds for smoother transfer
+            }
+        }
+
+        // Set up event listeners to call the transferVolume function whenever the valve sliders are moved
+        document.getElementById("v1Valve").addEventListener("input", transferVolume);
+        document.getElementById("v2Valve").addEventListener("input", transferVolume);
+
+    </script>
+</body>
+
+</html>
