@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Rate Simulation</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex flex-col items-center p-6">
+    <h1 class="text-2xl font-bold mb-6">Non Variable Input Flows to Recycle Tank, BTA, BTB</h1>
+
+    <canvas id="flowRateChart" class="mb-6"></canvas>
+
+    <script>
+        // Data from provided table
+        const timeStamps = [];
+        const recycleTankFlow = [];
+        const btaFlow = [];
+        const btbFlow = [];
+        let recycleTankVolume = 3.5; // Initial tank volume in moderate range
+        const recycleTankCapacity = 7.0;
+
+        // Updated full 5-minute (300-second) dataset
+        const rawData = `0:00:00 0.083 0.017 0.05
+0:00:01 0.083 0.017 0.05
+0:00:02 0.083 0.017 0.05
+0:00:03 0.083 0.017 0.05
+0:00:04 0.083 0.017 0.05
+0:00:05 0.083 0.017 0.05
+0:00:06 0.083 0.017 0.05
+0:00:07 0.083 0.017 0.05
+0:00:08 0.083 0.017 0.05
+0:00:09 0.083 0.017 0.05
+0:00:10 0.083 0.017 0.05
+0:00:30 0.083 0.017 0.05
+0:00:31 0.083 0.017 0
+0:00:50 0.083 0.017 0
+0:00:51 0 0.017 0
+0:01:00 0 0.017 0
+0:02:00 0 0 0
+0:02:01 0.05 0 0
+0:02:30 0.05 0 0
+0:02:31 0 0.017 0
+0:03:00 0 0.017 0
+0:03:30 0 0.017 0
+0:03:31 0.05 0.017 0
+0:04:00 0.05 0.017 0
+0:04:31 0 0.017 0
+0:05:00 0 0.017 0`;
+
+        // Parsing data into arrays
+        rawData.split("\n").forEach(line => {
+            const parts = line.split(" ");
+            timeStamps.push(parts[0]);
+            recycleTankFlow.push(parseFloat(parts[1]));
+            btaFlow.push(parseFloat(parts[2]));
+            btbFlow.push(parseFloat(parts[3]));
+        });
+
+        // Chart.js configuration
+        const ctx = document.getElementById('flowRateChart').getContext('2d');
+        const flowRateChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timeStamps,
+                datasets: [
+                    {
+                        label: 'Recycle Tank Input',
+                        data: recycleTankFlow,
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        fill: true,
+                    },
+                    {
+                        label: 'BTA Input',
+                        data: btaFlow,
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0, 255, 0, 0.2)',
+                        fill: true,
+                    },
+                    {
+                        label: 'BTB Input',
+                        data: btbFlow,
+                        borderColor: 'red',
+                        backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                        fill: true,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (HH:MM:SS)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Flow Rate (m³/s)'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
