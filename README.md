@@ -4,6 +4,7 @@ Project Solution Description:
 
 ---------------------------------------------------------------------------------------------------------
 Non Variable PSA Output Flows (Intermittent): 
+
   PSA Section 1:
   Evac NA
   Blowdown goes to recycle tank
@@ -21,6 +22,7 @@ Non Variable PSA Output Flows (Intermittent):
   Blowdown goes to BTB
 
 Non Variable System Input Flows (Intermittent): 
+
   Buffer Tank A (BTA) – Evacuation from PSA 2 & 3
   Buffer Tank B (BTB) – Blowdown from Rotary PSA
   Recycle Tank – Blowdown from PSA 1, 2, and 3
