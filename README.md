@@ -32,12 +32,15 @@ Volume Range States:
 
 1. Recycle tank
    - maximum capacity of 7 cubic meters
+   - maximum pressur of 7 psi
    - Low (LO): 0.0 - 2.0 m³
    - Moderate (MOD): 2.0 - 4.5 m³
    - High (HI): 4.5 - 6.5 m³
    - High-High (HIHI): 6.5 - 7.0 m³
   
 2. Buffer Tanks A & B
+   - maximum capacity of 2.5 cubic meters
+   - maximum pressure of 7 psi
    - Low (LO): 0.0 - 1.1 m³
    - High (HI): 1.2 - 2.3 m³
    - High-High (HIHI): 2.3 - 2.5 m³
